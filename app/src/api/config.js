@@ -9,7 +9,7 @@ import { Platform } from "react-native";
  *   false -> the app talks to the real Node backend over the network using the
  *            host settings below (LAN IP for a physical phone, etc.).
  */
-export const LOCAL_MODE = true;
+export const LOCAL_MODE = false;
 
 /*
  * Backend location (only used when LOCAL_MODE is false).
@@ -22,7 +22,7 @@ export const LOCAL_MODE = true;
  * The emulator/simulator defaults are picked automatically below; override
  * MANUAL_HOST when testing on a real device on the same Wi-Fi as the backend.
  */
-const MANUAL_HOST = "http://192.168.1.175:4000"; // physical-device testing (this PC's LAN IP)
+const MANUAL_HOST = "https://smart-nusery.onrender.com"; // live Render backend (works over mobile data anywhere)
 
 const AUTO_HOST = Platform.select({
   android: "http://10.0.2.2:4000",
