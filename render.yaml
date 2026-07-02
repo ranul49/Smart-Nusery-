@@ -1,0 +1,28 @@
+# Render.com Blueprint — one-click deploy of the Smart Cassava Nursery backend.
+# In the Render dashboard: New → Blueprint → connect the repo containing this
+# file. Render reads this and provisions the service automatically.
+#
+# Free plan gives an HTTPS URL (https://<name>.onrender.com) with WebSocket
+# support, so the mobile app works over mobile data. Note: the free plan sleeps
+# after ~15 min idle and cold-starts on the next request (~30-50s).
+services:
+  - type: web
+    name: cassava-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong secret
+      - key: DEVICE_API_KEY
+        generateValue: true # shared key the ESP32 uses for /api/ingest
+      - key: SIMULATOR_ENABLED
+        value: "true" # flip to "false" (+ set DATA_SOURCE) when going live
+      - key: DATA_SOURCE
+        value: "simulator"
+      - key: SAMPLE_INTERVAL_SEC
+        value: "5"

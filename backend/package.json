@@ -1,0 +1,35 @@
+{
+  "name": "smart-cassava-nursery-backend",
+  "version": "1.0.0",
+  "description": "Backend API and cloud-application layer for the IoT-based Smart Cassava Seedling Nursery (Project SEN-20-5112).",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js"
+  },
+  "keywords": [
+    "iot",
+    "cassava",
+    "nursery",
+    "esp32",
+    "smart-farming"
+  ],
+  "author": "SEN-20-5112",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "twilio": "^5.3.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend-api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "backend", "start"],
+      "port": 4000
+    },
+    {
+      "name": "expo-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "app", "start"],
+      "port": 8081
+    }
+  ]
+}
