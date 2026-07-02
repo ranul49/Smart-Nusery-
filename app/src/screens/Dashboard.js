@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   Leaf, Thermometer, Droplets, Sprout, Sun, Waves, Fan, Wifi, Cloud,
-  MessageSquare, Gauge, RadioTower,
+  MessageSquare, Gauge, RadioTower, WifiOff,
 } from "lucide-react-native";
 import { C, cardShadow } from "../theme/tokens.js";
 import { Card, Pill, SectionLabel, PrimaryButton, OutlineButton, Screen, Notice } from "../components/ui.js";
@@ -18,11 +18,13 @@ const ENV_STYLE = {
 };
 const DEV_ICONS = { pump: Waves, fan: Fan, wifi: Wifi, cloud: Cloud, sms: MessageSquare };
 
-export function Dashboard({ user, live, onOpenLive, onOpenSystem }) {
+export function Dashboard({ user, live, connected = true, onOpenLive, onOpenSystem }) {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState(null);
   const [today, setToday] = useState(null);
   const [error, setError] = useState("");
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [now, setNow] = useState(Date.now());
 
   const load = useCallback(async () => {
     try {
@@ -30,6 +32,7 @@ export function Dashboard({ user, live, onOpenLive, onOpenSystem }) {
       setData(latest);
       setStatus(st);
       setToday(report.today);
+      setUpdatedAt(Date.now());
       setError("");
     } catch (e) {
       setError(e.message);
@@ -42,7 +45,21 @@ export function Dashboard({ user, live, onOpenLive, onOpenSystem }) {
     return () => clearInterval(id);
   }, [load]);
 
+  // Tick once a second so the "updated Xs ago" line and staleness stay current.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   if (!data) return <Screen><Notice text={error || "Loading nursery…"} /></Screen>;
+
+  // Live-pushed readings keep this fresher than the 6s poll; treat data as stale
+  // if the socket is down, the last poll errored, or nothing has updated recently.
+  const liveTs = live?.ts ? new Date(live.ts).getTime() : 0;
+  const freshestTs = Math.max(updatedAt || 0, liveTs);
+  const secsAgo = freshestTs ? Math.floor((now - freshestTs) / 1000) : null;
+  const stale = !connected || !!error || (secsAgo != null && secsAgo > 20);
+  const agoText = secsAgo == null ? "—" : secsAgo < 2 ? "just now" : `${secsAgo}s ago`;
 
   const summary = data.summary;
   // Prefer the live-pushed reading for the environment cards when available.
@@ -59,11 +76,22 @@ export function Dashboard({ user, live, onOpenLive, onOpenSystem }) {
 
   return (
     <Screen>
+      {/* stale-data / reconnecting banner */}
+      {stale && (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: C.amberSoft, borderRadius: 12, borderWidth: 1, borderColor: `${C.amber}55`, paddingVertical: 9, paddingHorizontal: 12, marginBottom: 14 }}>
+          <WifiOff size={16} color={C.amber} />
+          <Text style={{ flex: 1, fontSize: 12.5, color: C.amber, fontWeight: "600" }}>
+            {connected ? "Data may be stale" : "Reconnecting…"} · last update {agoText}
+          </Text>
+        </View>
+      )}
+
       {/* greeting */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
         <View>
           <Text style={{ fontSize: 13, color: C.inkSoft }}>Good morning,</Text>
           <Text style={{ fontSize: 22, fontWeight: "800", color: C.ink }}>{user?.name || "Farmer"} 👋</Text>
+          <Text style={{ fontSize: 11, color: stale ? C.amber : C.inkSoft, marginTop: 3 }}>Updated {agoText}</Text>
         </View>
         <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: C.greenSoft, alignItems: "center", justifyContent: "center" }}>
           <Leaf size={22} color={C.green} />

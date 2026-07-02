@@ -11,12 +11,16 @@ import { localApi } from "./local.js";
 export function useLive() {
   const [reading, setReading] = useState(null);
   const [alert, setAlert] = useState(null);
+  // Connection health for the stale-data banner. Local mode is always "connected"
+  // (the engine is on-device); networked mode tracks the WebSocket state.
+  const [connected, setConnected] = useState(LOCAL_MODE);
   const socketRef = useRef(null);
   const retryRef = useRef(null);
 
   useEffect(() => {
     // Local mode: subscribe directly to the on-device data engine.
     if (LOCAL_MODE) {
+      setConnected(true);
       const unsub = localApi.subscribeLive((type, payload) => {
         if (type === "reading") setReading(payload);
         else if (type === "alert") setAlert({ ...payload, _rx: Date.now() });
@@ -32,6 +36,7 @@ export function useLive() {
       const ws = new WebSocket(`${WS_BASE}/ws?token=${encodeURIComponent(token)}`);
       socketRef.current = ws;
 
+      ws.onopen = () => setConnected(true);
       ws.onmessage = (evt) => {
         try {
           const msg = JSON.parse(evt.data);
@@ -43,6 +48,7 @@ export function useLive() {
       };
 
       ws.onclose = () => {
+        setConnected(false);
         if (!closed) retryRef.current = setTimeout(connect, 2500);
       };
       ws.onerror = () => ws.close();
@@ -56,5 +62,5 @@ export function useLive() {
     };
   }, []);
 
-  return { reading, alert };
+  return { reading, alert, connected };
 }

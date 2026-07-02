@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, Modal, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, Modal, ActivityIndicator, Vibration, BackHandler } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -85,22 +85,42 @@ function MainApp({ user, onUserChange }) {
   const [overlay, setOverlay] = useState(null); // live | system | sms
   const [scan, setScan] = useState(false);
   const [toast, setToast] = useState(null);
-  const { reading, alert } = useLive();
+  const { reading, alert, connected } = useLive();
 
-  // Surface a critical alert as a floating toast, auto-dismissing after 5s.
+  // Surface a critical alert as a floating toast (auto-dismiss after 5s) and
+  // buzz the phone so a pocketed device doesn't miss a breach.
   useEffect(() => {
     if (alert && alert.level === "Critical") {
       setToast(alert);
+      Vibration.vibrate([0, 400, 120, 400]); // pattern: two short buzzes
       const t = setTimeout(() => setToast(null), 5200);
       return () => clearTimeout(t);
     }
   }, [alert]);
 
+  // Android hardware back button: close an overlay first, then fall back to the
+  // Home tab, and only exit the app from Home with no overlay open.
+  useEffect(() => {
+    const onBack = () => {
+      if (overlay) {
+        setOverlay(null);
+        return true;
+      }
+      if (tab !== "dash") {
+        setTab("dash");
+        return true;
+      }
+      return false; // let the OS exit the app
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+    return () => sub.remove();
+  }, [overlay, tab]);
+
   let body;
   if (overlay === "live") body = <Live onBack={() => setOverlay(null)} live={reading} />;
   else if (overlay === "system") body = <SystemView onBack={() => setOverlay(null)} />;
   else if (overlay === "sms") body = <SmsView onBack={() => setOverlay(null)} />;
-  else if (tab === "dash") body = <Dashboard user={user} live={reading} onOpenLive={() => setOverlay("live")} onOpenSystem={() => setOverlay("system")} />;
+  else if (tab === "dash") body = <Dashboard user={user} live={reading} connected={connected} onOpenLive={() => setOverlay("live")} onOpenSystem={() => setOverlay("system")} />;
   else if (tab === "analytics") body = <Analytics />;
   else if (tab === "alerts") body = <Alerts onOpenSms={() => setOverlay("sms")} />;
   else if (tab === "reports") body = <Reports />;

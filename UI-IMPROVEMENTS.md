@@ -122,6 +122,13 @@ credibility in a demo or supervisor review.
 
 ## Prioritized shortlist
 
+> **Status (2026-07-02):** shortlist items 1–5 are ✅ implemented — stale-data
+> banner + `connected` flag (`useLive.js`, `Dashboard.js`), Android back button
+> (`App.js`), chart min-span y-scaling + axis labels (`charts.js`), gauge safe-zone
+> bands (`Gauge270.js`, `Live.js`), and critical-alert vibration (`App.js`).
+> Items 6–9 remain.
+
+
 | # | Improvement | Why first | Effort |
 |---|------------|-----------|--------|
 | 1 | Stale-data / reconnecting banner (1.1) | Trust in the numbers is the product | Small |

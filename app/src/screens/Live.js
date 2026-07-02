@@ -9,13 +9,14 @@ import { api } from "../api/client.js";
 
 export function Live({ onBack, live }) {
   const [reading, setReading] = useState(null);
+  const [thresholds, setThresholds] = useState(null);
   const [trend, setTrend] = useState([]);
   const [ago, setAgo] = useState(0);
   const lastTs = useRef(null);
 
   // Seed from REST, then let the live WebSocket reading take over.
   useEffect(() => {
-    api.latest().then((d) => setReading(d.latest)).catch(() => {});
+    api.latest().then((d) => { setReading(d.latest); setThresholds(d.thresholds); }).catch(() => {});
     api.trend("1h", 12).then((d) => setTrend(d.series)).catch(() => {});
     const id = setInterval(() => api.trend("1h", 12).then((d) => setTrend(d.series)).catch(() => {}), 15000);
     return () => clearInterval(id);
@@ -45,18 +46,21 @@ export function Live({ onBack, live }) {
   return (
     <Screen header={<SubHeader title="Live Monitoring" onBack={onBack} />}>
       <Card style={{ alignItems: "center", padding: 22 }}>
-        <Gauge270 value={reading.temp} min={15} max={40} unit="°C" label="Temperature" color={C.amber} size={170} />
+        <Gauge270 value={reading.temp} min={15} max={40} unit="°C" label="Temperature" color={C.amber} size={170}
+          zoneMin={24} zoneMax={thresholds?.tempMax ?? 30} />
         <View style={{ marginTop: 14 }}>
-          <Pill text="Optimal range 24–30°C" color={C.amber} bg={C.amberSoft} />
+          <Pill text={`Optimal range 24–${thresholds?.tempMax ?? 30}°C`} color={C.amber} bg={C.amberSoft} />
         </View>
       </Card>
 
       <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
         <Card style={{ flex: 1, alignItems: "center", padding: 16 }}>
-          <Gauge270 value={reading.humidity} min={60} max={100} unit="%" label="Humidity" color={C.blue} />
+          <Gauge270 value={reading.humidity} min={60} max={100} unit="%" label="Humidity" color={C.blue}
+            zoneMin={thresholds?.humidityMin ?? 85} zoneMax={100} />
         </Card>
         <Card style={{ flex: 1, alignItems: "center", padding: 16 }}>
-          <Gauge270 value={reading.soil} min={40} max={100} unit="%" label="Soil Moist." color={C.green} />
+          <Gauge270 value={reading.soil} min={40} max={100} unit="%" label="Soil Moist." color={C.green}
+            zoneMin={thresholds?.soilMin ?? 60} zoneMax={100} />
         </Card>
       </View>
 
