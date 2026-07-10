@@ -1,14 +1,19 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, ActivityIndicator, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Leaf, Cpu } from "lucide-react-native";
 import { C } from "../theme/tokens.js";
 
 export function Splash({ onDone }) {
+  // Keep the latest onDone in a ref so a parent re-render (e.g. the session
+  // restore call resolving) can't reset this timer and delay the splash.
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+
   useEffect(() => {
-    const t = setTimeout(onDone, 2400);
+    const t = setTimeout(() => onDoneRef.current(), 2400);
     return () => clearTimeout(t);
-  }, [onDone]);
+  }, []);
 
   return (
     <Pressable onPress={onDone} style={{ flex: 1 }}>
