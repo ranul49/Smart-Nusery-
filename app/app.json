@@ -2,6 +2,7 @@
   "expo": {
     "name": "Smart Cassava Nursery",
     "slug": "smart-cassava-nursery",
+    "owner": "ranul121s-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
