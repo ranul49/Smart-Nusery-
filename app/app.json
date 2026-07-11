@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "Smart Cassava Nursery",
-    "slug": "smart-cassava-nursery",
+    "slug": "ransomed-paul",
+    "owner": "ranul121s-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -35,7 +36,10 @@
       }
     },
     "extra": {
-      "apiBaseUrl": "http://10.0.2.2:4000"
+      "apiBaseUrl": "http://10.0.2.2:4000",
+      "eas": {
+        "projectId": "c3abc4e8-caa5-4397-afa6-a374f8e57e25"
+      }
     }
   }
 }

@@ -40,7 +40,8 @@
       "Bash(python -c \"import sys,json;r=json.load\\(sys.stdin\\)['reading'];print\\('stored -> status',r['status'],'hum',r['humidity'],'temp',r['temp']\\)\")",
       "Bash(awk '{print $5, $9}')",
       "Bash(python -c \"import json;d=json.load\\(open\\('data/devices.json'\\)\\);print\\(len\\(d\\),'devices'\\);[print\\(x['id'],'owner=',x['ownerId'],x['name']\\) for x in d]\")",
-      "Bash(python -c \"import json;d=json.load\\(open\\('data/users.json'\\)\\);[print\\(x['id'],x['phone'],x['name']\\) for x in d]\")"
+      "Bash(python -c \"import json;d=json.load\\(open\\('data/users.json'\\)\\);[print\\(x['id'],x['phone'],x['name']\\) for x in d]\")",
+      "mcp__Claude_Code_Remote__send_later"
     ]
   }
 }

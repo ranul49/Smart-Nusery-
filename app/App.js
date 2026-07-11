@@ -10,6 +10,7 @@ import {
 import { C } from "./src/theme/tokens.js";
 import { api, loadToken, getToken } from "./src/api/client.js";
 import { useLive } from "./src/api/useLive.js";
+import { ErrorBoundary } from "./src/components/ErrorBoundary.js";
 
 import { Splash } from "./src/screens/Splash.js";
 import { Login } from "./src/screens/Login.js";
@@ -50,33 +51,35 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <View style={{ flex: 1, backgroundColor: C.surface }}>
-        {phase === "splash" && (
-          <Splash onDone={() => setPhase(getToken() && user ? "app" : "login")} />
-        )}
-        {phase === "login" && (
-          <Login
-            onAuthed={(u) => {
-              setUser(u);
-              setPhase("app");
-            }}
-          />
-        )}
-        {phase === "app" && (
-          <MainApp
-            user={user}
-            onUserChange={setUser}
-            onLogout={async () => {
-              await api.logout();
-              setUser(null);
-              setPhase("login");
-            }}
-          />
-        )}
-      </View>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <View style={{ flex: 1, backgroundColor: C.surface }}>
+          {phase === "splash" && (
+            <Splash onDone={() => setPhase(getToken() && user ? "app" : "login")} />
+          )}
+          {phase === "login" && (
+            <Login
+              onAuthed={(u) => {
+                setUser(u);
+                setPhase("app");
+              }}
+            />
+          )}
+          {phase === "app" && (
+            <MainApp
+              user={user}
+              onUserChange={setUser}
+              onLogout={async () => {
+                await api.logout();
+                setUser(null);
+                setPhase("login");
+              }}
+            />
+          )}
+        </View>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

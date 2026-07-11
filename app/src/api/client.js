@@ -9,6 +9,7 @@ import { localApi } from "./local.js";
  */
 
 const TOKEN_KEY = "cassava.token";
+const REQUEST_TIMEOUT_MS = 15000;
 let token = null;
 
 export async function loadToken() {
@@ -25,14 +26,25 @@ async function setToken(value) {
 }
 
 async function request(path, { method = "GET", body } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error("Request timed out — check your connection and try again");
+    throw new Error("Couldn't reach the server — check your connection");
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
